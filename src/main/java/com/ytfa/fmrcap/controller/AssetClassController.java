@@ -20,10 +20,12 @@ public class AssetClassController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<AssetClass> save(@RequestBody AssetClass assetClass) {
-        AssetClass savedAssetClass = assetClassService.save(assetClass);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedAssetClass);
-    }
+public ResponseEntity<String> save(@RequestBody AssetClass assetClass) {
+    assetClassService.save(assetClass);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body("Asset class saved successfully");
+}
 
     @GetMapping("/all")
     public ResponseEntity<List<AssetClass>> findAll() {
@@ -50,9 +52,9 @@ public class AssetClassController {
         }
 
         assetClass.setId(id);
-        AssetClass updatedAssetClass = assetClassService.save(assetClass);
+assetClassService.save(assetClass);
 
-        return ResponseEntity.ok(updatedAssetClass);
+return ResponseEntity.ok("Asset class updated successfully");
     }
 
     @DeleteMapping("/delete/{id}")
