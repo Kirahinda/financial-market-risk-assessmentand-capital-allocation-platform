@@ -32,6 +32,7 @@ public class RiskAssessmentService {
 
     public RiskAssessment save(RiskAssessment assessment) {
 
+        validateAssessment(assessment);
         resolveRelationships(assessment);
 
         return riskAssessmentRepository.save(assessment);
@@ -51,15 +52,56 @@ public class RiskAssessmentService {
 
     public RiskAssessment update(UUID id, RiskAssessment assessment) {
 
+        if (!riskAssessmentRepository.existsById(id)) {
+            throw new EntityNotFoundException(
+                    "Risk assessment not found: " + id);
+        }
+
         assessment.setId(id);
 
+        validateAssessment(assessment);
         resolveRelationships(assessment);
 
         return riskAssessmentRepository.save(assessment);
     }
 
     public void deleteById(UUID id) {
+
+        if (!riskAssessmentRepository.existsById(id)) {
+            throw new EntityNotFoundException(
+                    "Risk assessment not found: " + id);
+        }
+
         riskAssessmentRepository.deleteById(id);
+    }
+
+    private void validateAssessment(RiskAssessment assessment) {
+
+        if (assessment == null) {
+            throw new IllegalArgumentException(
+                    "Risk assessment information is required");
+        }
+
+        if (assessment.getPortfolioName() == null
+                || assessment.getPortfolioName().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Portfolio name is required");
+        }
+
+        if (assessment.getAssessmentDate() == null) {
+            throw new IllegalArgumentException(
+                    "Assessment date is required");
+        }
+
+        if (assessment.getCapitalUsd() <= 0) {
+            throw new IllegalArgumentException(
+                    "Assessment capital must be greater than zero");
+        }
+
+        if (assessment.getStatus() == null) {
+            throw new IllegalArgumentException(
+                    "Assessment status is required");
+        }
     }
 
     private void resolveRelationships(RiskAssessment assessment) {
