@@ -1,3 +1,4 @@
+
 package com.ytfa.fmrcap.service;
 
 import com.ytfa.fmrcap.entity.CapitalAllocation;
@@ -6,6 +7,7 @@ import com.ytfa.fmrcap.repository.CapitalAllocationRepository;
 import com.ytfa.fmrcap.repository.RiskAssessmentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +27,11 @@ public class CapitalAllocationService {
         this.riskAssessmentRepository = riskAssessmentRepository;
     }
 
+    @Transactional
     public CapitalAllocation save(CapitalAllocation allocation) {
 
         resolveRiskAssessment(allocation);
+        validateAllocation(allocation, null);
 
         return capitalAllocationRepository.save(allocation);
     }
@@ -44,11 +48,13 @@ public class CapitalAllocationService {
         return capitalAllocationRepository.existsById(id);
     }
 
+    @Transactional
     public CapitalAllocation update(UUID id, CapitalAllocation allocation) {
 
         allocation.setId(id);
 
         resolveRiskAssessment(allocation);
+        validateAllocation(allocation, id);
 
         return capitalAllocationRepository.save(allocation);
     }
@@ -73,5 +79,33 @@ public class CapitalAllocationService {
                         "Risk assessment not found: " + assessmentId));
 
         allocation.setRiskAssessment(assessment);
+    }
+
+    private void validateAllocation(
+            CapitalAllocation allocation,
+            UUID allocationId) {
+
+        int percentage = allocation.getAllocatedPercent();
+
+        if (percentage < 1 || percentage > 100) {
+            throw new IllegalArgumentException(
+                    "Allocation percentage must be between 1 and 100");
+        }
+
+        UUID assessmentId = allocation.getRiskAssessment().getId();
+
+        Long existingTotal =
+                capitalAllocationRepository.sumAllocatedPercent(
+                        assessmentId, allocationId);
+
+        long total = (existingTotal == null ? 0L : existingTotal)
+                + percentage;
+
+        if (total > 100) {
+            throw new IllegalArgumentException(
+                    "Total capital allocation cannot exceed 100%. "
+                            + "Current total after this operation would be "
+                            + total + "%");
+        }
     }
 }
