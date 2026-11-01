@@ -2,6 +2,8 @@ package com.ytfa.fmrcap.controller;
 
 import com.ytfa.fmrcap.entity.Investor;
 import com.ytfa.fmrcap.service.InvestorService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,17 +22,13 @@ public class InvestorController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody Investor investor) {
-        try {
-            Investor savedInvestor = investorService.save(investor);
+    public ResponseEntity<Investor> save(
+            @Valid @RequestBody Investor investor) {
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(savedInvestor);
+        Investor savedInvestor = investorService.save(investor);
 
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest()
-                    .body(exception.getMessage());
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(savedInvestor);
     }
 
     @GetMapping("/all")
@@ -39,39 +37,37 @@ public class InvestorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable UUID id) {
-        return investorService.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("The investor with that ID does not exist"));
+    public ResponseEntity<Investor> findById(@PathVariable UUID id) {
+
+        Investor investor = investorService.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Investor not found: " + id));
+
+        return ResponseEntity.ok(investor);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(
+    public ResponseEntity<Investor> update(
             @PathVariable UUID id,
-            @RequestBody Investor investor) {
+            @Valid @RequestBody Investor investor) {
 
         if (!investorService.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("The investor with that ID does not exist");
+            throw new EntityNotFoundException(
+                    "Investor not found: " + id);
         }
 
-        try {
-            Investor updatedInvestor = investorService.update(id, investor);
-            return ResponseEntity.ok(updatedInvestor);
+        Investor updatedInvestor =
+                investorService.update(id, investor);
 
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest()
-                    .body(exception.getMessage());
-        }
+        return ResponseEntity.ok(updatedInvestor);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
 
         if (!investorService.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("The investor with that ID does not exist");
+            throw new EntityNotFoundException(
+                    "Investor not found: " + id);
         }
 
         investorService.deleteById(id);

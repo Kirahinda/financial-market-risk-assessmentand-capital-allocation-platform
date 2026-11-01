@@ -8,11 +8,34 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<ApiErrorResponse> handleValidationErrors(
+        MethodArgumentNotValidException exception,
+        HttpServletRequest request) {
+
+    String message = exception.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": "
+                    + error.getDefaultMessage())
+            .distinct()
+            .collect(java.util.stream.Collectors.joining("; "));
+
+    return buildResponse(
+            HttpStatus.BAD_REQUEST,
+            message,
+            request
+    );
+}
+
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(

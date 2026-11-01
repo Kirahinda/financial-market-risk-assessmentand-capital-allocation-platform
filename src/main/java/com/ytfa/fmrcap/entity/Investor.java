@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.UUID;
 
@@ -17,15 +19,20 @@ public class Investor {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @NotBlank(message = "Investor code is required")
     @Column(unique = true)
     private String investorCode;
 
+    @Email(message = "Please provide a valid email address")
     private String email;
 
+    @NotBlank(message = "Risk profile is required")
     private String riskProfile;
 
     public Investor() {
