@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface InvestorRepository
-        extends JpaRepository<Investor, UUID> {
+public interface InvestorRepository extends JpaRepository<Investor, UUID> {
+
+    boolean existsByInvestorCode(String investorCode);
+
+    boolean existsByInvestorCodeAndIdNot(String investorCode, UUID id);
 }
