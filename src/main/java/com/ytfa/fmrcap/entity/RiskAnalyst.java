@@ -8,9 +8,15 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Table;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 import java.util.UUID;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "risk_analyst")
@@ -20,16 +26,22 @@ public class RiskAnalyst {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @NotBlank(message = "Email address is required")
+    @Email(message = "Please provide a valid email address")
     private String email;
 
+    @NotNull(message = "A trading desk must be assigned")
     @ManyToOne
     @JoinColumn(name = "trading_desk_id")
     private TradingDesk tradingDesk;
 
+    @NotEmpty(message = "At least one asset class must be selected")
     @ManyToMany
     @JoinTable(name = "risk_analyst_asset_class")
     private List<AssetClass> assetClasses;
